@@ -10,7 +10,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Build & test
-        uses: likvido/actions-pr@v1
+        uses: likvido/action-pr@v1
         with:
           working-directory: src
           docker-file: src/Likvido.Project/Dockerfile
