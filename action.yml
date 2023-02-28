@@ -1,0 +1,20 @@
+name: "Pull Request Build"
+description: "Will run a docker build to the given target (usually either the build target or test target, depending on if the project has any unit test)"
+inputs:
+  working-directory:
+    description: 'The path to the working directory'
+    required: false
+    default: '.'
+  docker-file:
+    description: 'The path to the Dockerfile'
+    required: true
+  docker-file-target:
+    description: 'The target step in the Dockerfile to run'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - run: |
+        cd ${{ inputs.working-directory }}
+        docker build --target ${{ inputs.docker-file-target }} -f ${{ inputs.docker-file }} .
+      shell: bash
