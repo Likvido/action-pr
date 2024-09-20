@@ -14,7 +14,66 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - run: |
+    - name: Docker build (Attempt 1)
+      id: build_1
+      continue-on-error: true
+      run: |
+        echo "--- Debug Info for Attempt 1 ---"
+        echo "Current directory: $(pwd)"
+        echo "Working directory: ${{ inputs.working-directory }}"
+        echo "Dockerfile path: ${{ inputs.docker-file }}"
+        echo "Docker build target: ${{ inputs.docker-file-target }}"
+        echo "Listing contents of current directory:"
+        ls -la
+        echo "Listing contents of working directory:"
+        ls -la ${{ inputs.working-directory }}
+        echo "Docker version:"
+        docker --version
+        echo "--- End Debug Info ---"
+        
+        cd ${{ inputs.working-directory }}
+        docker build --target ${{ inputs.docker-file-target }} -f ${{ inputs.docker-file }} .
+      shell: bash
+
+    - name: Docker build (Attempt 2)
+      id: build_2
+      if: steps.build_1.outcome == 'failure'
+      continue-on-error: true
+      run: |
+        echo "--- Debug Info for Attempt 2 ---"
+        echo "Current directory: $(pwd)"
+        echo "Working directory: ${{ inputs.working-directory }}"
+        echo "Dockerfile path: ${{ inputs.docker-file }}"
+        echo "Docker build target: ${{ inputs.docker-file-target }}"
+        echo "Listing contents of current directory:"
+        ls -la
+        echo "Listing contents of working directory:"
+        ls -la ${{ inputs.working-directory }}
+        echo "Docker version:"
+        docker --version
+        echo "--- End Debug Info ---"
+        
+        cd ${{ inputs.working-directory }}
+        docker build --target ${{ inputs.docker-file-target }} -f ${{ inputs.docker-file }} .
+      shell: bash
+
+    - name: Docker build (Attempt 3)
+      id: build_3
+      if: steps.build_2.outcome == 'failure'
+      run: |
+        echo "--- Debug Info for Attempt 3 ---"
+        echo "Current directory: $(pwd)"
+        echo "Working directory: ${{ inputs.working-directory }}"
+        echo "Dockerfile path: ${{ inputs.docker-file }}"
+        echo "Docker build target: ${{ inputs.docker-file-target }}"
+        echo "Listing contents of current directory:"
+        ls -la
+        echo "Listing contents of working directory:"
+        ls -la ${{ inputs.working-directory }}
+        echo "Docker version:"
+        docker --version
+        echo "--- End Debug Info ---"
+        
         cd ${{ inputs.working-directory }}
         docker build --target ${{ inputs.docker-file-target }} -f ${{ inputs.docker-file }} .
       shell: bash
