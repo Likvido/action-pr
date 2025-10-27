@@ -14,10 +14,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Capture NUGET_SOURCE from environment
-      run: echo "NUGET_SOURCE_VALUE=${NUGET_SOURCE:-}" >> $GITHUB_ENV
-      shell: bash
-
     - name: Docker build (Attempt 1)
       id: build_1
       continue-on-error: true
@@ -36,7 +32,7 @@ runs:
         echo "--- End Debug Info ---"
         
         cd ${{ inputs.working-directory }}
-        docker build --build-arg NUGET_SOURCE=${{ env.NUGET_SOURCE_VALUE }} --target ${{ inputs.docker-file-target }} -f ${{ inputs.docker-file }} .
+        docker build --target ${{ inputs.docker-file-target }} -f ${{ inputs.docker-file }} .
       shell: bash
 
     - name: Docker build (Attempt 2)
@@ -58,7 +54,7 @@ runs:
         echo "--- End Debug Info ---"
         
         cd ${{ inputs.working-directory }}
-        docker build --build-arg NUGET_SOURCE=${{ env.NUGET_SOURCE_VALUE }} --target ${{ inputs.docker-file-target }} -f ${{ inputs.docker-file }} .
+        docker build --target ${{ inputs.docker-file-target }} -f ${{ inputs.docker-file }} .
       shell: bash
 
     - name: Docker build (Attempt 3)
@@ -79,5 +75,5 @@ runs:
         echo "--- End Debug Info ---"
         
         cd ${{ inputs.working-directory }}
-        docker build --build-arg NUGET_SOURCE=${{ env.NUGET_SOURCE_VALUE }} --target ${{ inputs.docker-file-target }} -f ${{ inputs.docker-file }} .
+        docker build --target ${{ inputs.docker-file-target }} -f ${{ inputs.docker-file }} .
       shell: bash
