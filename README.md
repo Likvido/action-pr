@@ -6,7 +6,6 @@ This action builds Docker images to a specified target for pull request validati
 
 - ✅ Builds Docker images to a specific target stage for testing
 - ✅ Optional registry-based build cache for faster PR builds
-- ✅ Shares build cache with release builds for optimal performance
 
 ## Usage
 
@@ -47,7 +46,7 @@ To enable faster builds using Azure Container Registry as a build cache:
     azure-service-principal-password: ${{ secrets.AZURE_SERVICE_PRINCIPAL_PASSWORD }}
 ```
 
-The cache is scoped per application (using `app-name`) and is shared between PR builds and release builds for optimal performance.
+The cache is scoped per application using the `app-name` input.
 
 ## Inputs
 
