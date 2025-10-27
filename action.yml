@@ -11,13 +11,55 @@ inputs:
   docker-file-target:
     description: 'The target step in the Dockerfile to run'
     required: true
+  use-registry-cache:
+    description: 'Enable registry-based build cache for faster builds'
+    required: false
+    default: 'false'
+  app-name:
+    description: 'The name of the app (used for cache scoping)'
+    required: false
+    default: ''
+  acr-registry:
+    description: 'The name of the ACR registry for build cache'
+    required: false
+    default: ''
+  azure-service-principal-id:
+    description: 'The ID of the service principal for registry authentication'
+    required: false
+    default: ''
+  azure-service-principal-password:
+    description: 'The password of the service principal for registry authentication'
+    required: false
+    default: ''
 runs:
   using: "composite"
   steps:
+    - name: Validate registry cache inputs
+      if: inputs.use-registry-cache == 'true'
+      run: |
+        if [ -z "${{ inputs.app-name }}" ] || [ -z "${{ inputs.acr-registry }}" ] || [ -z "${{ inputs.azure-service-principal-id }}" ] || [ -z "${{ inputs.azure-service-principal-password }}" ]; then
+          echo "Error: When use-registry-cache is enabled, the following inputs are required:"
+          echo "  - app-name"
+          echo "  - acr-registry"
+          echo "  - azure-service-principal-id"
+          echo "  - azure-service-principal-password"
+          exit 1
+        fi
+      shell: bash
+
+    - name: Login to ACR for build cache
+      if: inputs.use-registry-cache == 'true'
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ inputs.acr-registry }}.azurecr.io
+        username: ${{ inputs.azure-service-principal-id }}
+        password: ${{ inputs.azure-service-principal-password }}
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: Build Docker image for testing
+    - name: Build Docker image for testing (with cache)
+      if: inputs.use-registry-cache == 'true'
       uses: docker/build-push-action@v6
       with:
         context: ${{ inputs.working-directory }}
@@ -25,5 +67,15 @@ runs:
         target: ${{ inputs.docker-file-target }}
         push: false
         load: true
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+        cache-from: type=registry,ref=${{ inputs.acr-registry }}.azurecr.io/${{ inputs.app-name }}:buildcache
+        cache-to: type=registry,ref=${{ inputs.acr-registry }}.azurecr.io/${{ inputs.app-name }}:buildcache,mode=max
+
+    - name: Build Docker image for testing (no cache)
+      if: inputs.use-registry-cache != 'true'
+      uses: docker/build-push-action@v6
+      with:
+        context: ${{ inputs.working-directory }}
+        file: ${{ inputs.working-directory }}/${{ inputs.docker-file }}
+        target: ${{ inputs.docker-file-target }}
+        push: false
+        load: true
