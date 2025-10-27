@@ -1,6 +1,18 @@
 # Likvido github action for pr checks
 
-```
+This action builds Docker images to a specified target for pull request validation.
+
+## Features
+
+- ✅ Builds Docker images to a specific target stage for testing
+- ✅ Optional registry-based build cache for faster PR builds
+- ✅ Shares build cache with release builds for optimal performance
+
+## Usage
+
+### Basic Usage
+
+```yaml
 jobs:
   pr:
     runs-on: ubuntu-latest
@@ -16,6 +28,30 @@ jobs:
           docker-file: src/Likvido.Project/Dockerfile
           docker-file-target: test
 ```
+
+### With Registry Build Cache
+
+To enable faster builds using Azure Container Registry as a build cache:
+
+```yaml
+- name: Build & test
+  uses: likvido/action-pr@v1
+  with:
+    working-directory: src
+    docker-file: src/Likvido.Project/Dockerfile
+    docker-file-target: test
+    use-registry-cache: 'true'
+    app-name: my-app
+    acr-registry: likvido
+    azure-service-principal-id: ${{ secrets.AZURE_SERVICE_PRINCIPAL_ID }}
+    azure-service-principal-password: ${{ secrets.AZURE_SERVICE_PRINCIPAL_PASSWORD }}
+```
+
+The cache is scoped per application (using `app-name`) and is shared between PR builds and release builds for optimal performance.
+
+## Inputs
+
+See `action.yml` for all available inputs.
 
 
 # Releasing new version
