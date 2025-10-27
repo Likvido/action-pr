@@ -1,5 +1,5 @@
 name: "Pull Request Build"
-description: "Will run a docker build to the given target (usually either the build target or test target, depending on if the project has any unit test)"
+description: "Build Docker image to specified target for pull request validation"
 inputs:
   working-directory:
     description: 'The path to the working directory'
@@ -14,66 +14,16 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Docker build (Attempt 1)
-      id: build_1
-      continue-on-error: true
-      run: |
-        echo "--- Debug Info for Attempt 1 ---"
-        echo "Current directory: $(pwd)"
-        echo "Working directory: ${{ inputs.working-directory }}"
-        echo "Dockerfile path: ${{ inputs.docker-file }}"
-        echo "Docker build target: ${{ inputs.docker-file-target }}"
-        echo "Listing contents of current directory:"
-        ls -la
-        echo "Listing contents of working directory:"
-        ls -la ${{ inputs.working-directory }}
-        echo "Docker version:"
-        docker --version
-        echo "--- End Debug Info ---"
-        
-        cd ${{ inputs.working-directory }}
-        docker build --target ${{ inputs.docker-file-target }} -f ${{ inputs.docker-file }} .
-      shell: bash
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
 
-    - name: Docker build (Attempt 2)
-      id: build_2
-      if: steps.build_1.outcome == 'failure'
-      continue-on-error: true
-      run: |
-        echo "--- Debug Info for Attempt 2 ---"
-        echo "Current directory: $(pwd)"
-        echo "Working directory: ${{ inputs.working-directory }}"
-        echo "Dockerfile path: ${{ inputs.docker-file }}"
-        echo "Docker build target: ${{ inputs.docker-file-target }}"
-        echo "Listing contents of current directory:"
-        ls -la
-        echo "Listing contents of working directory:"
-        ls -la ${{ inputs.working-directory }}
-        echo "Docker version:"
-        docker --version
-        echo "--- End Debug Info ---"
-        
-        cd ${{ inputs.working-directory }}
-        docker build --target ${{ inputs.docker-file-target }} -f ${{ inputs.docker-file }} .
-      shell: bash
-
-    - name: Docker build (Attempt 3)
-      id: build_3
-      if: steps.build_2.outcome == 'failure'
-      run: |
-        echo "--- Debug Info for Attempt 3 ---"
-        echo "Current directory: $(pwd)"
-        echo "Working directory: ${{ inputs.working-directory }}"
-        echo "Dockerfile path: ${{ inputs.docker-file }}"
-        echo "Docker build target: ${{ inputs.docker-file-target }}"
-        echo "Listing contents of current directory:"
-        ls -la
-        echo "Listing contents of working directory:"
-        ls -la ${{ inputs.working-directory }}
-        echo "Docker version:"
-        docker --version
-        echo "--- End Debug Info ---"
-        
-        cd ${{ inputs.working-directory }}
-        docker build --target ${{ inputs.docker-file-target }} -f ${{ inputs.docker-file }} .
-      shell: bash
+    - name: Build Docker image for testing
+      uses: docker/build-push-action@v6
+      with:
+        context: ${{ inputs.working-directory }}
+        file: ${{ inputs.working-directory }}/${{ inputs.docker-file }}
+        target: ${{ inputs.docker-file-target }}
+        push: false
+        load: true
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
