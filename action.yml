@@ -36,8 +36,13 @@ runs:
   steps:
     - name: Validate registry cache inputs
       if: inputs.use-registry-cache == 'true'
+      env:
+        APP_NAME: ${{ inputs.app-name }}
+        ACR_REGISTRY: ${{ inputs.acr-registry }}
+        AZURE_SERVICE_PRINCIPAL_ID: ${{ inputs.azure-service-principal-id }}
+        AZURE_SERVICE_PRINCIPAL_PASSWORD: ${{ inputs.azure-service-principal-password }}
       run: |
-        if [ -z "${{ inputs.app-name }}" ] || [ -z "${{ inputs.acr-registry }}" ] || [ -z "${{ inputs.azure-service-principal-id }}" ] || [ -z "${{ inputs.azure-service-principal-password }}" ]; then
+        if [ -z "$APP_NAME" ] || [ -z "$ACR_REGISTRY" ] || [ -z "$AZURE_SERVICE_PRINCIPAL_ID" ] || [ -z "$AZURE_SERVICE_PRINCIPAL_PASSWORD" ]; then
           echo "Error: When use-registry-cache is enabled, the following inputs are required:"
           echo "  - app-name"
           echo "  - acr-registry"
