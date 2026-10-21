@@ -66,6 +66,8 @@ runs:
     - name: Build Docker image for testing (with cache)
       if: inputs.use-registry-cache == 'true'
       uses: docker/build-push-action@v7
+      env:
+        DOCKER_BUILD_RECORD_UPLOAD: 'false'
       with:
         context: ${{ inputs.working-directory }}
         file: ${{ inputs.working-directory }}/${{ inputs.docker-file }}
@@ -78,6 +80,8 @@ runs:
     - name: Build Docker image for testing (no cache)
       if: inputs.use-registry-cache != 'true'
       uses: docker/build-push-action@v7
+      env:
+        DOCKER_BUILD_RECORD_UPLOAD: 'false'
       with:
         context: ${{ inputs.working-directory }}
         file: ${{ inputs.working-directory }}/${{ inputs.docker-file }}
